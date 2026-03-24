@@ -1,67 +1,66 @@
-# flux-context (CLI)
+# Context
 
 [![Rust](https://img.shields.io/badge/built_with-Rust-dca282.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**Context** es un motor de ingesta de alto rendimiento diseñado para transformar repositorios complejos y documentación técnica en un contexto unificado, optimizado para LLMs (ChatGPT, Claude, Llama 3).
+This project is a high-performance ingestion engine designed to transform complex repositories and technical documentation into a unified context, optimized for LLMs (ChatGPT, Claude, Llama, Gemini).
 
-## Características Principales
+## Key Features
 
-*   **Rendimiento Multihilo**: Procesamiento paralelo masivo mediante `Rayon`.
-*   **Persistencia de Estado**: Recuerda tu última configuración (formato, filtros, minificación) automáticamente.
-*   **Modo Inteligente**: Si se invoca con argumentos (ej: `context .`), ejecuta la última configuración guardada de forma instantánea.
-*   **Búsqueda Interactiva**: Filtra el árbol de archivos en tiempo real en la TUI presionando `/`.
-*   **Smart Ignore**: Heurísticas dinámicas para omitir artefactos pesados (>1MB) y binarios conocidos.
-*   **Parsers de Alta Fidelidad**: Soporte avanzado para PDF (con detección de tablas y código), DOCX, Excel y Texto.
+*   **Multi-threaded Performance**: Massive parallel processing powered by `Rayon`.
+*   **State Persistence**: Automatically remembers your last configuration (format, filters, output destination).
+*   **Smart Mode**: If invoked with arguments (e.g., `context .`), it executes the last saved configuration instantly.
+*   **Smart Ignore**: Dynamic heuristics to omit heavy artifacts (>1MB) and known binary noise.
+*   **Native Multi-platform Parsers**: High-speed, built-in support for **PDF, DOCX, Excel, and Text** without external dependencies (no Python required).
 
-## Uso Estratégico
+## Strategic Usage
 
-### 1. Flujo Interactivo (Naked Call)
-Ejecuta el comando sin argumentos para abrir la TUI:
+### 1. Interactive Flow
+Run the command without arguments to open the TUI:
 ```bash
 context
 ```
-*Configura tus preferencias, busca archivos con `/` y confirma con `Enter`. Esta configuración se volverá tu predeterminada.*
+*Configure your preferences, navigate the tree to select/deselect files, and confirm with `Enter`. This setup will be saved as your new default.*
 
-## Interfaz TUI (Panel de Control)
+## TUI Interface
 
-| Tecla | Acción |
+| Key | Action |
 | :--- | :--- |
-| `/` | **Activar Búsqueda** (filtra el árbol en tiempo real). |
-| `Espacio` | Seleccionar / Deseleccionar (aplica recursivamente). |
-| `Enter` | **Confirmar y Procesar**. |
-| `c` | Alternar **Clipboard** (ON/OFF). |
-| `m` | Alternar **Minificación** (ON/OFF). |
-| `o` | Alternar **Archivo de Salida**. |
-| `f` | Ciclar **Formato** (XML -> MD -> JSON -> TXT). |
-| `Esc` | Limpiar búsqueda / Salir. |
+| `Space` | **Toggle Selection** (applies recursively to directories). |
+| `Enter` | **Confirm and Process**. |
+| `c` | Toggle **Clipboard** (ON/OFF). |
+| `o` | Toggle **Output File** (File vs. Stdout). |
+| `f` | Cycle **Format** (XML ↔ Markdown). |
+| `Arrows` | Navigate the file tree. |
+| `Left/Right` | Collapse / Expand directories. |
+| `Esc / q` | **Exit** the application. |
 
-## Opciones del Binario
+## CLI Options
 
-| Flag | Descripción |
+| Flag | Description |
 | :--- | :--- |
-| `-o, --output <FILE>` | Ruta de salida. Detecta formato por extensión. |
-| `-s, --stdout` | Vuelca a terminal (desactiva TUI y sobreescribe archivo). |
-| `-c, --clip` | Copia el resultado al portapapeles. |
-| `-m, --minify` | Reduce el peso eliminando espacios/líneas vacías. |
-| `-S, --smart-ignore` | Activa/Desactiva heurísticas de ruido (def: true). |
-| `-e, --extensions` | Lista blanca de extensiones (ej: `rs,py,ts`). |
-| `-x, --exclude` | Lista negra de extensiones. |
-| `-i, --include-path` | Filtro de inclusión por cadena en ruta. |
-| `-X, --exclude-path` | Filtro de exclusión por cadena en ruta. |
-| `-I, --interactive` | Fuerza el modo TUI ignorando otros flags. |
-| `-v, --verbose` | Nivel de logs (`-v` INFO, `-vv` DEBUG). |
+| `-o, --output <FILE>` | Output path. Automatically detects format by extension. |
+| `-s, --stdout` | Dumps to terminal (disables TUI and overrides output file). |
+| `-c, --clip` | Copies the result to the system clipboard. |
+| `-S, --smart-ignore` | Enable/Disable noise heuristics (default: true). |
+| `-e, --extensions` | Whitelist extensions (e.g., `rs,py,ts`). |
+| `-x, --exclude` | Blacklist extensions. |
+| `-i, --include-path` | Inclusion filter by string in path. |
+| `-X, --exclude-path` | Exclusion filter by string in path. |
+| `-I, --interactive` | Force TUI mode, ignoring other flags. |
+| `-v, --verbose` | Log level (`-v` INFO, `-vv` DEBUG). |
 
-## Arquitectura
+## Architecture
 
-El proyecto sigue una **Arquitectura Hexagonal** estricta:
+The project follows a **Modular Hexagonal Native Architecture** for maximum portability:
 
 ```text
 src/
-├── core/           # Dominio (Config, Persistencia, Minifier)
-├── ports/          # Interfaces (Traits)
-├── adapters/       # Implementaciones técnicas (Scanner, Parsers, Output)
-│   ├── fs_scanner/ # Smart Ignore y filtrado
-│   └── parsers/    # PDF con Layout Analysis, Excel, Word
-└── ui/             # TUI reactiva (Ratatui)
+├── core/           # Domain (Config, Persistence, Models)
+├── ports/          # Interfaces (Traits for Scanner, Reader, Writer)
+├── adapters/       # Technical Implementations
+│   ├── fs_scanner/ # Smart Ignore engine
+│   ├── output/     # XML and Markdown generators
+│   └── parsers/    # Native PDF, Office, and Text extractors
+└── ui/             # Reactive TUI (Ratatui)
 ```

@@ -23,7 +23,7 @@ impl Default for FsScanner {
 }
 
 impl ProjectScanner for FsScanner {
-    /// Escanea el sistema de archivos y calcula una estimación de tokens por archivo.
+    /// Scans all the directory and estimates the tokens
     fn scan(&self, config: &ContextConfig) -> Result<Vec<FileNode>> {
         let root = &config.root_path;
         let mut builder = WalkBuilder::new(root);
@@ -73,65 +73,5 @@ impl ProjectScanner for FsScanner {
 
         files.sort_by(|a: &FileNode, b: &FileNode| a.relative_path.cmp(&b.relative_path));
         Ok(files)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::core::config::ContextConfig;
-    use std::fs::File;
-    use tempfile::tempdir;
-
-    #[test]
-    fn test_scanner_isolation_and_hidden_capture() {
-        let dir = tempdir().unwrap();
-        let root = dir.path();
-
-        let hidden_name = ".hidden_test";
-        File::create(root.join(hidden_name)).unwrap();
-        File::create(root.join("visible.rs")).unwrap();
-
-        // FIX: Uso de struct update syntax en lugar de mutación post-default
-        let config = ContextConfig {
-            root_path: root.to_path_buf(),
-            ..ContextConfig::default()
-        };
-
-        let scanner = FsScanner::new();
-        let results = scanner.scan(&config).unwrap();
-
-        let hidden_exists = results
-            .iter()
-            .any(|n| n.is_hidden && n.relative_path.to_string_lossy() == hidden_name);
-        assert!(hidden_exists, "Should capture the hidden file");
-        assert!(results.len() >= 2);
-    }
-
-    #[test]
-    fn test_scanner_noise_exclusion() {
-        let dir = tempdir().unwrap();
-        let root = dir.path();
-
-        let git_dir = root.join(".git");
-        std::fs::create_dir(&git_dir).unwrap();
-        File::create(git_dir.join("config")).unwrap();
-        File::create(root.join("legit.rs")).unwrap();
-
-        // FIX: Uso de struct update syntax en lugar de mutación post-default
-        let config = ContextConfig {
-            root_path: root.to_path_buf(),
-            ..ContextConfig::default()
-        };
-
-        let scanner = FsScanner::new();
-        let results = scanner.scan(&config).unwrap();
-
-        for node in &results {
-            assert!(!node.relative_path.to_string_lossy().contains(".git"));
-        }
-        assert!(results
-            .iter()
-            .any(|n| n.relative_path.to_string_lossy() == "legit.rs"));
     }
 }

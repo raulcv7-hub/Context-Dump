@@ -85,31 +85,3 @@ impl NoiseDetector {
         file_size > limit
     }
 }
-
-#[cfg(test)]
-impl NoiseDetector {
-    fn is_heavy_artifact_by_ext(ext: &str) -> bool {
-        const FORBIDDEN_EXTS: &[&str] = &[
-            "exe", "dll", "so", "dylib", "pyc", "pyo", "pyd", "wasm", "pdb", "zip", "tar", "gz",
-            "7z", "png", "jpg", "jpeg", "gif", "svg", "ico", "mp4", "mov", "bin", "iso", "img",
-            "msi", "dmg", "pkg", "db", "sqlite", "sqlite3", "log", "bak", "swp", "tmp",
-        ];
-        FORBIDDEN_EXTS.contains(&ext)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_pdf_is_not_noise_anymore() {
-        assert!(!NoiseDetector::is_heavy_artifact_by_ext("pdf"));
-    }
-
-    #[test]
-    fn test_new_dangerous_extensions() {
-        assert!(NoiseDetector::is_heavy_artifact_by_ext("sqlite"));
-        assert!(NoiseDetector::is_heavy_artifact_by_ext("pyo"));
-    }
-}

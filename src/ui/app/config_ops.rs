@@ -3,17 +3,16 @@ use crate::ui::app::core::App;
 use std::path::PathBuf;
 
 impl App {
-    /// Activa o desactiva la copia al portapapeles del sistema.
+    /**
+     * Toggles the system clipboard setting.
+     */
     pub fn toggle_clipboard(&mut self) {
         self.config.to_clipboard = !self.config.to_clipboard;
     }
 
-    /// Activa o desactiva la minificación de espacios en blanco.
-    pub fn toggle_minify(&mut self) {
-        self.config.minify = !self.config.minify;
-    }
-
-    /// Alterna el destino de salida entre la terminal y un archivo físico.
+    /**
+     * Switches output between a file and standard output.
+     */
     pub fn toggle_output_destination(&mut self) {
         if self.config.output_path.is_some() {
             self.config.output_path = None;
@@ -31,13 +30,13 @@ impl App {
         }
     }
 
-    /// Cicla entre los formatos disponibles y actualiza la extensión del archivo si existe.
+    /**
+     * Alternates between XML and Markdown formats.
+     */
     pub fn cycle_format(&mut self) {
         let new_format = match self.config.output_format {
             OutputFormat::Xml => OutputFormat::Markdown,
-            OutputFormat::Markdown => OutputFormat::Json,
-            OutputFormat::Json => OutputFormat::Text,
-            OutputFormat::Text => OutputFormat::Xml,
+            OutputFormat::Markdown => OutputFormat::Xml,
         };
 
         self.config.output_format = new_format;
@@ -48,13 +47,13 @@ impl App {
         }
     }
 
-    /// Mapeo puro de formato a extensión de archivo.
+    /**
+     * Returns the file extension string for a given format.
+     */
     fn format_to_ext(&self, format: OutputFormat) -> &'static str {
         match format {
             OutputFormat::Xml => "xml",
             OutputFormat::Markdown => "md",
-            OutputFormat::Json => "json",
-            OutputFormat::Text => "txt",
         }
     }
 }

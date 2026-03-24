@@ -1,49 +1,61 @@
-# --- Configuration and Variables ---
-BINARY_NAME := $(shell grep -m 1 '^name =' Cargo.toml | cut -d '"' -f 2)
-CARGO := cargo
-VENV := .venv
-PIP := $(VENV)/bin/pip
+ifeq ($(OS),Windows_NT)
+    BINARY_NAME := $(shell powershell -Command "(Get-Content Cargo.toml | Select-String 'name =').ToString().Split('\"')[1]").exe
+    CARGO := cargo
+    RM := del /Q
+    MKDIR := powershell -Command "New-Item -ItemType Directory -Force"
+    INSTALL_DIR := $(USERPROFILE)\.local\bin
+    EXE := .exe
+else
+    BINARY_NAME := $(shell grep -m 1 '^name =' Cargo.toml | cut -d '"' -f 2)
+    CARGO := cargo
+    RM := rm -f
+    MKDIR := mkdir -p
+    INSTALL_DIR := $(HOME)/.local/bin
+    EXE := 
+endif
 
-# UI Colors (Using printf to ensure compatibility)
-CYAN   := $(shell printf '\033[0;36m')
-GREEN  := $(shell printf '\033[0;32m')
-RED    := $(shell printf '\033[0;31m')
-RESET  := $(shell printf '\033[0m')
+TEST_DIR := tests
 
-.PHONY: all setup build release run clean install help
+.PHONY: all setup build release run clean install help test test-unit test-integration
 
 all: help
 
-setup: ## Create python virtual environment and install Docling
-	@echo "$(CYAN)📦 Setting up hybrid environment...$(RESET)"
-	python3 -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	$(PIP) install docling
-	$(PIP) install tiktoken
-	@echo "$(GREEN)✅ Environment ready.$(RESET)"
+setup:
+	@echo "Checking toolchain..."
+	@$(CARGO) --version || (echo "Error: Rust/Cargo not found." && exit 1)
+	@$(MKDIR) $(INSTALL_DIR)
+	@echo "Setup complete. Binary path ensured at: $(INSTALL_DIR)"
 
-build: ## Compile in debug mode
-	@echo "$(CYAN)🔨 Building debug binary...$(RESET)"
+build:
 	@$(CARGO) build
 
-release: ## Compile high-performance binary
-	@echo "$(GREEN)🚀 Compiling release binary...$(RESET)"
+release:
 	@$(CARGO) build --release
 
-run: ## Execute the project
-	@$(CARGO) run -- $(filter-all,$(MAKECMDGOALS))
+run:
+	@$(CARGO) run --
 
-clean: ## Remove build artifacts and virtual environment
-	@echo "$(RED)🧹 Cleaning up...$(RESET)"
+test:
+	@echo "Executing all tests..."
+	@$(CARGO) test
+
+clean:
 	@$(CARGO) clean
-	rm -rf $(VENV)
+	@echo "Artifacts removed."
 
-install: release ## Install binary to ~/.local/bin
-	@echo "$(CYAN)📦 Installing binary...$(RESET)"
-	@mkdir -p $(HOME)/.local/bin
-	@cp target/release/$(BINARY_NAME) $(HOME)/.local/bin/$(BINARY_NAME)
-	@chmod +x $(HOME)/.local/bin/$(BINARY_NAME)
-	@echo "$(GREEN)✅ Installed at ~/.local/bin/$(BINARY_NAME)$(RESET)"
+install: release
+	@echo "Installing $(BINARY_NAME) via cargo..."
+	@$(CARGO) install --path .
+	@echo "Success: Binary installed in your cargo bin directory."
 
-help: ## Show this help message
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2}'
+help:
+	@echo "Cross-Platform Management Menu"
+	@echo "----------------------------"
+	@echo "  setup            Prepare directories (OS-aware)"
+	@echo "  build            Standard debug compilation"
+	@echo "  release          Optimized release compilation"
+	@echo "  run              Execute current build"
+	@echo "  test             Run all tests"
+	@echo "  clean            Remove build data"
+	@echo "  install          Standard Rust installation (Portable)"
+	@echo "  help             Show this information"

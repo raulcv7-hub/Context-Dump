@@ -38,31 +38,3 @@ impl PathFilter {
         true
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::core::config::ContextConfig;
-    use std::collections::HashSet;
-
-    #[test]
-    fn test_filter_exclusion_priority() {
-        let mut config = ContextConfig::default();
-        config.exclude_paths.push("tests".to_string());
-        config.include_paths.push("src".to_string());
-
-        assert!(!PathFilter::matches(Path::new("tests/main.rs"), &config));
-        assert!(PathFilter::matches(Path::new("src/main.rs"), &config));
-    }
-
-    #[test]
-    fn test_filter_extension_whitelist() {
-        let mut config = ContextConfig::default();
-        let mut set = HashSet::new();
-        set.insert("rs".to_string());
-        config.include_extensions = set;
-
-        assert!(PathFilter::matches(Path::new("main.rs"), &config));
-        assert!(!PathFilter::matches(Path::new("main.py"), &config));
-    }
-}

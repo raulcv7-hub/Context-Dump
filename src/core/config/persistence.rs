@@ -6,7 +6,9 @@ use std::path::PathBuf;
 pub struct ConfigPersistence;
 
 impl ConfigPersistence {
-    /// Returns the path to the persistence file in the user's config directory.
+    /**
+     * Resolves the path to the persistent configuration file.
+     */
     fn get_path() -> Result<PathBuf> {
         let mut path = dirs::config_dir().context("Could not find config directory")?;
         path.push("context");
@@ -17,7 +19,9 @@ impl ConfigPersistence {
         Ok(path)
     }
 
-    /// Saves the provided configuration to disk.
+    /**
+     * Serializes and saves the configuration state.
+     */
     pub fn save(config: &ContextConfig) -> Result<()> {
         let path = Self::get_path()?;
         let json = serde_json::to_string_pretty(config)?;
@@ -25,7 +29,9 @@ impl ConfigPersistence {
         Ok(())
     }
 
-    /// Loads the last saved configuration from disk.
+    /**
+     * Loads and deserializes the last saved configuration.
+     */
     pub fn load() -> Result<Option<ContextConfig>> {
         let path = Self::get_path()?;
         if !path.exists() {
@@ -34,18 +40,5 @@ impl ConfigPersistence {
         let data = fs::read_to_string(path)?;
         let config: ContextConfig = serde_json::from_str(&data)?;
         Ok(Some(config))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_config_serialization_cycle() {
-        let config = ContextConfig::default();
-        let json = serde_json::to_string(&config).unwrap();
-        let decoded: ContextConfig = serde_json::from_str(&json).unwrap();
-        assert_eq!(config.output_format, decoded.output_format);
     }
 }

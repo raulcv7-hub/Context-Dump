@@ -10,7 +10,9 @@ use context::ui::run_tui;
 use indicatif::{ProgressBar, ProgressStyle};
 use tracing::{info, warn};
 
-/// Punto de entrada principal para el flujo de ejecución.
+/**
+ * Orchestrates the full execution logic and handles UI-to-Engine transitions.
+ */
 pub fn execute(args: ContextCli) -> anyhow::Result<()> {
     setup_logging(args.verbose);
 
@@ -31,7 +33,6 @@ pub fn execute(args: ContextCli) -> anyhow::Result<()> {
             args.include_hidden,
             args.no_ignore,
             args.clip,
-            args.minify,
             args.verbose > 0,
             args.smart_ignore,
             args.extensions.clone(),
@@ -73,7 +74,9 @@ pub fn execute(args: ContextCli) -> anyhow::Result<()> {
     run_processing(filtered_nodes, config)
 }
 
-/// Orquestador del procesamiento con una única barra de progreso global.
+/**
+ * Handles file ingestion and triggers the final output with a clean summary.
+ */
 fn run_processing(
     nodes: Vec<context::core::file::FileNode>,
     config: ContextConfig,
@@ -115,40 +118,37 @@ fn run_processing(
     println!("\n🚀 --- EXECUTION SUMMARY ---");
     println!("📂 Files processed:  {}", file_count);
     println!("🪙 Total tokens:     {}", total_tokens);
-    println!(
-        "🛠️  Minification:     {}",
-        if config.minify { "ENABLED" } else { "DISABLED" }
-    );
-
-    if let Some(p) = &config.output_path {
-        println!("💾 Output saved to:  {}", p.display());
-    }
+    println!("📄 Format:           {:?}", config.output_format);
 
     if config.to_clipboard {
-        println!("📋 Content copied:   SYSTEM CLIPBOARD");
+        println!("📋 Destination:      SYSTEM CLIPBOARD (File output skipped)");
+    } else if let Some(p) = &config.output_path {
+        println!("💾 Destination:      FILE ({})", p.display());
+    } else {
+        println!("📺 Destination:      STANDARD OUTPUT");
     }
     println!("-----------------------------\n");
 
     Ok(())
 }
 
-/// Sincroniza los argumentos de la línea de comandos con la configuración cargada.
-/// Los argumentos explícitos de la CLI siempre deben ganar a la persistencia.
+/**
+ * Maps CLI flags to the internal configuration state.
+ */
 fn apply_cli_overrides(config: &mut ContextConfig, args: &ContextCli) {
-    if args.minify {
-        config.minify = true;
-    }
     if args.clip {
         config.to_clipboard = true;
     }
     if args.stdout {
         config.output_path = None;
+        config.to_clipboard = false;
     }
     if !args.smart_ignore {
         config.smart_ignore = false;
     }
     if let Some(out) = &args.output {
         config.output_path = Some(out.clone());
+        config.to_clipboard = false;
     }
     if args.is_format_explicit() {
         config.output_format = args.format;
@@ -163,7 +163,6 @@ fn apply_cli_overrides(config: &mut ContextConfig, args: &ContextCli) {
         config.max_depth = Some(depth);
     }
 
-    // FILTROS: Si el usuario proporciona filtros en CLI, estos reemplazan los anteriores.
     if !args.extensions.is_empty() {
         config.include_extensions = args.extensions.iter().map(|s| s.to_lowercase()).collect();
     }
@@ -182,6 +181,9 @@ fn apply_cli_overrides(config: &mut ContextConfig, args: &ContextCli) {
     }
 }
 
+/**
+ * Initializes the tracing subscriber for logging.
+ */
 fn setup_logging(verbosity: u8) {
     use std::io;
     use tracing::Level;

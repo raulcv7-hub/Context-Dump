@@ -24,8 +24,3 @@ output.xml
 
 # Environment variables
 .env
-.venv
-
-# Others
-/tests/assets/
-.future.md

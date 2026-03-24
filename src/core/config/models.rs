@@ -7,8 +7,6 @@ use std::path::PathBuf;
 pub enum OutputFormat {
     Xml,
     Markdown,
-    Json,
-    Text,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -20,7 +18,6 @@ pub struct ContextConfig {
     pub include_hidden: bool,
     pub no_ignore: bool,
     pub to_clipboard: bool,
-    pub minify: bool,
     pub verbose: bool,
     pub smart_ignore: bool,
     pub include_extensions: HashSet<String>,
@@ -30,7 +27,9 @@ pub struct ContextConfig {
 }
 
 impl Default for ContextConfig {
-    /// Provides a standard configuration with smart_ignore enabled by default.
+    /**
+     * Sets the default configuration with XML as the primary output format.
+     */
     fn default() -> Self {
         Self {
             root_path: PathBuf::from("."),
@@ -40,7 +39,6 @@ impl Default for ContextConfig {
             include_hidden: false,
             no_ignore: false,
             to_clipboard: false,
-            minify: false,
             verbose: false,
             smart_ignore: true,
             include_extensions: HashSet::new(),

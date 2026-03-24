@@ -24,13 +24,3 @@ impl FileParser for PlainTextParser {
         Ok(fs::read_to_string(path)?)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_text_parser_default() {
-        let _ = PlainTextParser;
-    }
-}

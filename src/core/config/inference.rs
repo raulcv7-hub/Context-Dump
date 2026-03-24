@@ -3,7 +3,9 @@ use std::collections::HashSet;
 use std::path::Path;
 
 impl ContextConfig {
-    /// Pure constructor for the domain config, decoupled from CLI.
+    /**
+     * Builds a validated configuration by merging user inputs and inferring formats.
+     */
     #[allow(clippy::too_many_arguments)]
     pub fn build_validated(
         root_path: std::path::PathBuf,
@@ -14,7 +16,6 @@ impl ContextConfig {
         include_hidden: bool,
         no_ignore: bool,
         to_clipboard: bool,
-        minify: bool,
         verbose: bool,
         smart_ignore: bool,
         extensions: Vec<String>,
@@ -38,7 +39,6 @@ impl ContextConfig {
             include_hidden,
             no_ignore,
             to_clipboard,
-            minify,
             verbose,
             smart_ignore,
             include_extensions: extensions
@@ -55,14 +55,16 @@ impl ContextConfig {
     }
 }
 
+/**
+ * Maps file extensions to supported output formats.
+ */
 fn infer_from_path<P: AsRef<Path>>(path: P) -> Option<OutputFormat> {
     path.as_ref()
         .extension()?
         .to_str()
         .map(|ext: &str| match ext.to_lowercase().as_str() {
             "xml" => OutputFormat::Xml,
-            "json" => OutputFormat::Json,
             "md" | "markdown" => OutputFormat::Markdown,
-            _ => OutputFormat::Text,
+            _ => OutputFormat::Xml,
         })
 }

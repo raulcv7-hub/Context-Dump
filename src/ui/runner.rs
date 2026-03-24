@@ -14,6 +14,9 @@ use crate::core::file::FileNode;
 use crate::ui::app::App;
 use crate::ui::view;
 
+/**
+ * Initializes and executes the TUI lifecycle.
+ */
 pub fn run_tui(
     files: &[FileNode],
     root_path: &Path,
@@ -41,6 +44,9 @@ pub fn run_tui(
     }
 }
 
+/**
+ * Core loop for drawing and event polling.
+ */
 fn run_app_loop(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
     app: &mut App,
@@ -59,33 +65,14 @@ fn run_app_loop(
     Ok(())
 }
 
+/**
+ * Map keys to application actions.
+ */
 fn handle_key_event(app: &mut App, code: KeyCode) {
-    if app.search_mode {
-        match code {
-            KeyCode::Enter | KeyCode::Esc => app.toggle_search(),
-            KeyCode::Backspace => {
-                app.search_query.pop();
-                app.update_view();
-            }
-            KeyCode::Char(c) => {
-                app.search_query.push(c);
-                app.update_view();
-            }
-            _ => {}
-        }
-        return;
-    }
-
     match code {
-        KeyCode::Char('q') => app.quit(),
-        KeyCode::Char('/') => app.toggle_search(),
-        KeyCode::Esc => {
-            app.search_query.clear();
-            app.update_view();
-        }
+        KeyCode::Char('q') | KeyCode::Esc => app.quit(),
         KeyCode::Enter => app.confirm(),
         KeyCode::Char('c') => app.toggle_clipboard(),
-        KeyCode::Char('m') => app.toggle_minify(),
         KeyCode::Char('f') => app.cycle_format(),
         KeyCode::Char('o') => app.toggle_output_destination(),
         KeyCode::Up => app.move_up(),

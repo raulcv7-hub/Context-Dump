@@ -1,6 +1,4 @@
-//! Output adapters module.
+//! Output adapters module focusing on structured formats.
 
-pub mod json;
 pub mod markdown;
-pub mod text;
 pub mod xml;

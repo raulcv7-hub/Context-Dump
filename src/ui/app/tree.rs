@@ -61,9 +61,7 @@ impl App {
             should_quit: false,
             confirmed: false,
             config,
-            default_filename: "context_report".to_string(),
-            search_query: String::new(),
-            search_mode: false,
+            default_filename: "context_report".to_string()
         };
 
         app.update_view();

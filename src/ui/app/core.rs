@@ -11,26 +11,21 @@ pub struct App {
     pub confirmed: bool,
     pub config: ContextConfig,
     pub default_filename: String,
-    pub search_query: String,
-    pub search_mode: bool,
 }
 
 impl App {
+    /**
+     * Marks the application to terminate the main loop.
+     */
     pub fn quit(&mut self) {
         self.should_quit = true;
     }
 
+    /**
+     * Marks the current selection as final and prepares for exit.
+     */
     pub fn confirm(&mut self) {
         self.confirmed = true;
         self.should_quit = true;
-    }
-
-    /// Toggles the search input mode.
-    pub fn toggle_search(&mut self) {
-        self.search_mode = !self.search_mode;
-        if !self.search_mode {
-            self.search_query.clear();
-            self.update_view();
-        }
     }
 }

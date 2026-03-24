@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 
 use crate::core::config::ContextConfig;
-use crate::core::content::{ContentMinifier, ContentType, FileContext};
+use crate::core::content::{ContentType, FileContext};
 use crate::core::tree::TreeRenderer;
 use crate::ports::writer::ContextWriter;
 
@@ -12,14 +12,18 @@ use crate::ports::writer::ContextWriter;
 pub struct MarkdownWriter;
 
 impl MarkdownWriter {
+    /**
+     * Factory for MarkdownWriter.
+     */
     pub fn new() -> Self {
         Self
     }
 }
 
 impl ContextWriter for MarkdownWriter {
-    /// Genera un documento Markdown estructurado.
-    /// Diferencia visualmente entre código fuente, errores de ingesta y archivos binarios.
+    /**
+     * Generates a structured Markdown document using raw file contents.
+     */
     fn write<W: Write>(
         &self,
         files: &[FileContext],
@@ -59,15 +63,9 @@ impl ContextWriter for MarkdownWriter {
             writeln!(writer, "### `{}`", file.relative_path.display())?;
             match &file.content {
                 ContentType::Text(text) => {
-                    let out = if config.minify {
-                        ContentMinifier::minify(text, &file.language)
-                    } else {
-                        text.clone()
-                    };
-                    writeln!(writer, "```{}\n{}```\n", file.language, out)?;
+                    writeln!(writer, "```{}\n{}```\n", file.language, text)?;
                 }
                 ContentType::Error(err_msg) => {
-                    // Nota: El formato debe coincidir exactamente con el test unitario
                     writeln!(
                         writer,
                         "\n> [!CAUTION]\n> **Processing Error:** {}\n",
@@ -77,40 +75,11 @@ impl ContextWriter for MarkdownWriter {
                 ContentType::Binary => {
                     writeln!(
                         writer,
-                        "\n> [!NOTE]\n> **Binary Content:** Omitted (Weight optimization)\n"
+                        "\n> [!NOTE]\n> **Binary Content:** Omitted\n"
                     )?;
                 }
             }
         }
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::core::content::ContentType;
-    use std::path::PathBuf;
-
-    #[test]
-    fn test_markdown_rendering_diagnostics() {
-        let config = ContextConfig::default();
-        let mut buf = Vec::new();
-        let files = vec![FileContext::new(
-            PathBuf::from("large_book.pdf"),
-            PathBuf::from("large_book.pdf"),
-            ContentType::Error("Subprocess Timeout".into()),
-            "pdf".into(),
-            0,
-        )];
-
-        MarkdownWriter::new()
-            .write(&files, &config, &mut buf)
-            .unwrap();
-        let output = String::from_utf8(buf).unwrap();
-
-        // CORRECCIÓN: Se añaden los asteriscos para coincidir con el formato del writer
-        assert!(output.contains("**Processing Error:** Subprocess Timeout"));
-        assert!(output.contains("[!CAUTION]"));
     }
 }

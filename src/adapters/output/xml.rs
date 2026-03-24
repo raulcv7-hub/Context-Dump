@@ -6,7 +6,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 
 use crate::core::config::ContextConfig;
-use crate::core::content::{ContentMinifier, ContentType, FileContext};
+use crate::core::content::{ContentType, FileContext};
 use crate::core::tree::TreeRenderer;
 use crate::ports::writer::ContextWriter;
 
@@ -14,13 +14,18 @@ use crate::ports::writer::ContextWriter;
 pub struct XmlWriter;
 
 impl XmlWriter {
+    /**
+     * Factory for XmlWriter.
+     */
     pub fn new() -> Self {
         Self
     }
 }
 
 impl ContextWriter for XmlWriter {
-    /// Genera un reporte XML detallado, informando errores específicos por archivo.
+    /**
+     * Generates a detailed XML report containing raw file contents.
+     */
     fn write<W: Write>(
         &self,
         files: &[FileContext],
@@ -30,7 +35,6 @@ impl ContextWriter for XmlWriter {
         let mut xml = Writer::new_with_indent(writer, b' ', 4);
         xml.write_event(Event::Start(BytesStart::new("context")))?;
 
-        // Sección de Metadatos
         xml.write_event(Event::Start(BytesStart::new("metadata")))?;
         xml.create_element("project_root")
             .write_text_content(BytesText::new(&config.root_path.to_string_lossy()))?;
@@ -60,7 +64,6 @@ impl ContextWriter for XmlWriter {
             .write_text_content(BytesText::new(&tree_view))?;
         xml.write_event(Event::End(BytesEnd::new("metadata")))?;
 
-        // Sección de Archivos
         xml.write_event(Event::Start(BytesStart::new("files")))?;
         for file in files {
             let mut elem = BytesStart::new("file");
@@ -70,15 +73,9 @@ impl ContextWriter for XmlWriter {
 
             match &file.content {
                 ContentType::Text(text) => {
-                    let body = if config.minify {
-                        ContentMinifier::minify(text, &file.language)
-                    } else {
-                        text.clone()
-                    };
-                    xml.write_event(Event::CData(BytesCData::new(&body)))?;
+                    xml.write_event(Event::CData(BytesCData::new(text)))?;
                 }
                 ContentType::Error(e) => {
-                    // INFO: Ahora reportamos el error real en lugar de un genérico [SKIPPED]
                     let error_msg = format!("[ERROR: {}]", e);
                     xml.write_event(Event::CData(BytesCData::new(&error_msg)))?;
                 }
@@ -92,19 +89,5 @@ impl ContextWriter for XmlWriter {
         xml.write_event(Event::End(BytesEnd::new("files")))?;
         xml.write_event(Event::End(BytesEnd::new("context")))?;
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_xml_structure_integrity() {
-        let config = ContextConfig::default();
-        let mut buf = Vec::new();
-        XmlWriter::new().write(&[], &config, &mut buf).unwrap();
-        let output = String::from_utf8(buf).unwrap();
-        assert!(output.contains("<context>"));
     }
 }
