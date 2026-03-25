@@ -52,17 +52,13 @@ pub struct ContextCli {
 }
 
 impl ContextCli {
-    /**
-     * Determines if the output format was explicitly requested.
-     */
+    /// Determines if the output format was explicitly requested.
     pub fn is_format_explicit(&self) -> bool {
         let args: Vec<String> = std::env::args().collect();
         args.iter().any(|a| a == "-f" || a == "--format")
     }
 
-    /**
-     * Determines if the TUI should be launched based on current arguments.
-     */
+    /// Determines if the TUI should be launched based on current arguments.
     pub fn should_run_interactive(&self) -> bool {
         if self.interactive {
             return true;

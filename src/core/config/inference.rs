@@ -3,9 +3,7 @@ use std::collections::HashSet;
 use std::path::Path;
 
 impl ContextConfig {
-    /**
-     * Builds a validated configuration by merging user inputs and inferring formats.
-     */
+    /// Builds a validated configuration by merging user inputs and inferring formats.
     #[allow(clippy::too_many_arguments)]
     pub fn build_validated(
         root_path: std::path::PathBuf,
@@ -55,9 +53,7 @@ impl ContextConfig {
     }
 }
 
-/**
- * Maps file extensions to supported output formats.
- */
+/// Maps file extensions to supported output formats.
 fn infer_from_path<P: AsRef<Path>>(path: P) -> Option<OutputFormat> {
     path.as_ref()
         .extension()?

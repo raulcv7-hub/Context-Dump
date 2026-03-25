@@ -1,21 +1,31 @@
 use std::path::PathBuf;
 
-/// Representación atómica de un elemento en la interfaz de usuario.
+/// UI-specific representation of a node in the interactive tree.
 pub struct UiNode {
+    /// The filesystem path associated with this node.
     pub path: PathBuf,
+    /// The display name in the TUI explorer.
     pub name: String,
+    /// Whether this node represents a directory.
     pub is_dir: bool,
+    /// Whether the directory is currently expanded in the view.
     pub expanded: bool,
+    /// Whether the node is selected for the final dump.
     pub selected: bool,
+    /// Inherited hidden status from the domain model.
     pub is_hidden: bool,
+    /// Inherited ignored status from the domain model.
     pub is_ignored: bool,
-    pub token_estimate: usize,
+    /// Visual depth level for correct indentation rendering.
     pub depth: usize,
+    /// Estimated tokens to be shown in the UI.
+    pub token_estimate: usize,
+    /// Indices of child nodes within the App's node vector.
     pub children: Vec<usize>,
 }
 
 impl UiNode {
-    /// Crea un nuevo nodo de interfaz con soporte para metadatos de visibilidad y peso.
+    /// Constructs a new UiNode with default expansion and smart selection logic.
     pub fn new(
         path: PathBuf,
         name: String,

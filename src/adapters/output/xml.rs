@@ -14,18 +14,14 @@ use crate::ports::writer::ContextWriter;
 pub struct XmlWriter;
 
 impl XmlWriter {
-    /**
-     * Factory for XmlWriter.
-     */
+    /// Factory for XmlWriter.
     pub fn new() -> Self {
         Self
     }
 }
 
 impl ContextWriter for XmlWriter {
-    /**
-     * Generates a detailed XML report containing raw file contents.
-     */
+    /// Generates a detailed XML report containing raw file contents.
     fn write<W: Write>(
         &self,
         files: &[FileContext],

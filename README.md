@@ -1,66 +1,93 @@
-# Context
+# Context-Dump
 
 [![Rust](https://img.shields.io/badge/built_with-Rust-dca282.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-This project is a high-performance ingestion engine designed to transform complex repositories and technical documentation into a unified context, optimized for LLMs (ChatGPT, Claude, Llama, Gemini).
+Context-Dump is a high-performance command-line utility and terminal user interface (TUI) designed for the systematic aggregation of project source code and technical documentation into a unified context format. The engine is optimized for ingestion by Large Language Models (LLMs), ensuring high data fidelity and precise token management.
 
-## Key Features
+## Technical Overview
 
-*   **Multi-threaded Performance**: Massive parallel processing powered by `Rayon`.
-*   **State Persistence**: Automatically remembers your last configuration (format, filters, output destination).
-*   **Smart Mode**: If invoked with arguments (e.g., `context .`), it executes the last saved configuration instantly.
-*   **Smart Ignore**: Dynamic heuristics to omit heavy artifacts (>1MB) and known binary noise.
-*   **Native Multi-platform Parsers**: High-speed, built-in support for **PDF, DOCX, Excel, and Text** without external dependencies (no Python required).
+The application is engineered in Rust to provide a memory-safe, zero-dependency executable. It addresses the challenge of project context window limitations by allowing users to selectively aggregate disparate file formats into structured XML or Markdown reports.
 
-## Strategic Usage
+### Key Capabilities
 
-### 1. Interactive Flow
-Run the command without arguments to open the TUI:
+- **High-Concurrency Ingestion**: Utilizes the Rayon data-parallelism library to execute multi-threaded file scanning and content extraction.
+- **Native Format Support**: Implements built-in, pure-Rust parsers for PDF, Microsoft Office (XLSX, DOCX), Jupyter Notebooks (IPYNB), and standard UTF-8 text files.
+- **Precision Tokenization**: Employs the `cl100k_base` BPE encoding (standardized by GPT-4 and Claude models) via `tiktoken-rs` for exact context window budgeting.
+- **Dependency-Free Portability**: Compiles to a static binary with no external runtime requirements (e.g., Python, C-shared libraries, or virtual environments).
+- **State Persistence**: Automatically retains user configuration, including inclusion/exclusion filters and output preferences, between execution cycles.
+
+## Installation
+
+### Prerequisites
+
+- Rust Toolchain (1.80 or higher)
+- C Compiler (for internal linking on specific targets)
+
+### Building from Source
+
+To compile and install the optimized release binary to your local path:
+
+```bash
+make install
+```
+
+This command invokes the Rust compiler with maximum optimization flags and relocates the binary to the standard user path (`~/.local/bin` or equivalent).
+
+## Operation Modes
+
+### Interactive Mode (TUI)
+
+Executing the utility without arguments initializes the interactive Terminal User Interface:
+
 ```bash
 context
 ```
-*Configure your preferences, navigate the tree to select/deselect files, and confirm with `Enter`. This setup will be saved as your new default.*
 
-## TUI Interface
+**Keybindings and Navigation:**
 
-| Key | Action |
-| :--- | :--- |
-| `Space` | **Toggle Selection** (applies recursively to directories). |
-| `Enter` | **Confirm and Process**. |
-| `c` | Toggle **Clipboard** (ON/OFF). |
-| `o` | Toggle **Output File** (File vs. Stdout). |
-| `f` | Cycle **Format** (XML ↔ Markdown). |
-| `Arrows` | Navigate the file tree. |
-| `Left/Right` | Collapse / Expand directories. |
-| `Esc / q` | **Exit** the application. |
+| Command | Action |
+|:---|:---|
+| Arrows | Traverse the hierarchical file tree. |
+| Space | Toggle recursive selection/deselection of nodes. |
+| o | Cycle output target (Standard Output, File System, System Clipboard). |
+| f | Cycle serialization format (XML, Markdown). |
+| Enter | Commit selection and initialize processing. |
+| Esc / q | Terminate the application. |
 
-## CLI Options
+### Headless Mode (CLI)
 
-| Flag | Description |
-| :--- | :--- |
-| `-o, --output <FILE>` | Output path. Automatically detects format by extension. |
-| `-s, --stdout` | Dumps to terminal (disables TUI and overrides output file). |
-| `-c, --clip` | Copies the result to the system clipboard. |
-| `-S, --smart-ignore` | Enable/Disable noise heuristics (default: true). |
-| `-e, --extensions` | Whitelist extensions (e.g., `rs,py,ts`). |
-| `-x, --exclude` | Blacklist extensions. |
-| `-i, --include-path` | Inclusion filter by string in path. |
-| `-X, --exclude-path` | Exclusion filter by string in path. |
-| `-I, --interactive` | Force TUI mode, ignoring other flags. |
-| `-v, --verbose` | Log level (`-v` INFO, `-vv` DEBUG). |
+The utility supports non-interactive execution for integration into automated pipelines and shell redirection:
 
-## Architecture
-
-The project follows a **Modular Hexagonal Native Architecture** for maximum portability:
-
-```text
-src/
-├── core/           # Domain (Config, Persistence, Models)
-├── ports/          # Interfaces (Traits for Scanner, Reader, Writer)
-├── adapters/       # Technical Implementations
-│   ├── fs_scanner/ # Smart Ignore engine
-│   ├── output/     # XML and Markdown generators
-│   └── parsers/    # Native PDF, Office, and Text extractors
-└── ui/             # Reactive TUI (Ratatui)
+```bash
+context <PATH> [OPTIONS]
 ```
+
+**Common Flags:**
+
+- `-o, --output <FILE>`: Specifies the target path for the report.
+- `-s, --stdout`: Redirects the report content to the standard output stream (Feedback is redirected to stderr).
+- `-f, --format <FORMAT>`: Manually selects the serialization format (`xml` or `markdown`).
+- `-e, --extensions <LIST>`: Implements a whitelist filter for specific file extensions.
+- `-X, --exclude-path <LIST>`: Implements a blacklist filter for path substrings.
+
+## System Architecture
+
+The project adheres to a Modular Native Architecture, separating domain logic from infrastructure adapters:
+
+- **Core Layer**: Manages BPE tokenization, domain models (`FileNode`, `FileContext`), and the ASCII tree rendering engine.
+- **Adapter Layer**: Contains specialized native extractors for binary and structured formats.
+- **Engine Layer**: Orchestrates the execution lifecycle, CLI argument parsing, and progress reporting via `stderr`.
+- **UI Layer**: Implements a state-driven reactive TUI using the `ratatui` framework.
+
+## Data Serialization Formats
+
+### XML (Structured)
+Optimized for programmatic LLM ingestion. It provides clear demarcations between file metadata, directory structure, and content within CDATA blocks to prevent escape character corruption.
+
+### Markdown (Readable)
+Optimized for human auditing and LLM prompting. It utilizes standard Markdown syntax and fenced code blocks with language identifiers.
+
+## License
+
+This software is released under the MIT License. For further information, refer to the [LICENSE](./LICENSE) file included in this repository.

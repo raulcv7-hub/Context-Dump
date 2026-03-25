@@ -6,9 +6,7 @@ use std::path::PathBuf;
 pub struct ConfigPersistence;
 
 impl ConfigPersistence {
-    /**
-     * Resolves the path to the persistent configuration file.
-     */
+    /// Resolves the path to the persistent configuration file.
     fn get_path() -> Result<PathBuf> {
         let mut path = dirs::config_dir().context("Could not find config directory")?;
         path.push("context");
@@ -19,9 +17,7 @@ impl ConfigPersistence {
         Ok(path)
     }
 
-    /**
-     * Serializes and saves the configuration state.
-     */
+    /// Serializes and saves the configuration state.
     pub fn save(config: &ContextConfig) -> Result<()> {
         let path = Self::get_path()?;
         let json = serde_json::to_string_pretty(config)?;
@@ -29,9 +25,7 @@ impl ConfigPersistence {
         Ok(())
     }
 
-    /**
-     * Loads and deserializes the last saved configuration.
-     */
+    /// Loads and deserializes the last saved configuration.
     pub fn load() -> Result<Option<ContextConfig>> {
         let path = Self::get_path()?;
         if !path.exists() {

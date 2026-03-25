@@ -1,0 +1,52 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: context
+            asset_name: flux-context-linux-amd64
+          - os: windows-latest
+            artifact_name: context.exe
+            asset_name: flux-context-windows-amd64.exe
+          - os: macos-latest
+            artifact_name: context
+            asset_name: flux-context-macos-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Release
+        run: cargo build --release --locked
+
+      - name: Prepare Binary
+        shell: bash
+        run: |
+          cd target/release
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            mv ${{ matrix.artifact_name }} ../../${{ matrix.asset_name }}
+          else
+            mv ${{ matrix.artifact_name }} ../../${{ matrix.asset_name }}
+          fi
+
+      - name: Upload Binaries to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ matrix.asset_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,9 +14,7 @@ use crate::core::file::FileNode;
 use crate::ui::app::App;
 use crate::ui::view;
 
-/**
- * Initializes and executes the TUI lifecycle.
- */
+/// Main entry point for the TUI runner.
 pub fn run_tui(
     files: &[FileNode],
     root_path: &Path,
@@ -44,9 +42,7 @@ pub fn run_tui(
     }
 }
 
-/**
- * Core loop for drawing and event polling.
- */
+/// Polls and handles events for the application loop.
 fn run_app_loop(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
     app: &mut App,
@@ -65,16 +61,13 @@ fn run_app_loop(
     Ok(())
 }
 
-/**
- * Map keys to application actions.
- */
+/// Maps keyboard input to App actions.
 fn handle_key_event(app: &mut App, code: KeyCode) {
     match code {
         KeyCode::Char('q') | KeyCode::Esc => app.quit(),
         KeyCode::Enter => app.confirm(),
-        KeyCode::Char('c') => app.toggle_clipboard(),
         KeyCode::Char('f') => app.cycle_format(),
-        KeyCode::Char('o') => app.toggle_output_destination(),
+        KeyCode::Char('o') => app.cycle_output_destination(),
         KeyCode::Up => app.move_up(),
         KeyCode::Down => app.move_down(),
         KeyCode::Char(' ') => app.toggle_selection(),

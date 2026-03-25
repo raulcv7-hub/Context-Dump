@@ -8,12 +8,10 @@ use std::io::{self, Write};
 use std::thread;
 use std::time::Duration;
 
-/**
- * Dispatches the generated context to a single destination based on priority:
- * 1. Clipboard (if enabled)
- * 2. File (if output_path is set)
- * 3. Stdout (default)
- */
+/// Dispatches the generated context to a single destination based on priority:
+/// 1. Clipboard (if enabled)
+/// 2. File (if output_path is set)
+/// 3. Stdout (default)
 pub fn dispatch(files: &[FileContext], config: &ContextConfig) -> anyhow::Result<()> {
     let mut buffer = Vec::new();
 

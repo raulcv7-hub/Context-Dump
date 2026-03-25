@@ -27,9 +27,7 @@ pub struct ContextConfig {
 }
 
 impl Default for ContextConfig {
-    /**
-     * Sets the default configuration with XML as the primary output format.
-     */
+    /// Sets the default configuration with XML as the primary output format.
     fn default() -> Self {
         Self {
             root_path: PathBuf::from("."),

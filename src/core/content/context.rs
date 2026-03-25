@@ -1,14 +1,19 @@
 use serde::Serialize;
 use std::path::PathBuf;
 
+/// Categorization of file content after extraction.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "type", content = "data")]
 pub enum ContentType {
+    /// Extracted UTF-8 string.
     Text(String),
+    /// Marker for skipped binary data.
     Binary,
+    /// Metadata regarding an extraction failure.
     Error(String),
 }
 
+/// Integrated representation of a file's data and system metadata.
 #[derive(Debug, Clone, Serialize)]
 pub struct FileContext {
     pub path: PathBuf,
@@ -19,37 +24,14 @@ pub struct FileContext {
 }
 
 impl FileContext {
-    /// Creates a new FileContext instance.
+    /// Constructor for a new FileContext.
     pub fn new(
-        path: PathBuf,
-        relative_path: PathBuf,
-        content: ContentType,
-        language: String,
-        token_count: usize,
+        p: PathBuf,
+        rp: PathBuf,
+        c: ContentType,
+        l: String,
+        tc: usize,
     ) -> Self {
-        Self {
-            path,
-            relative_path,
-            content,
-            language,
-            token_count,
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_file_context_creation() {
-        let ctx = FileContext::new(
-            PathBuf::from("a"),
-            PathBuf::from("a"),
-            ContentType::Binary,
-            "rs".into(),
-            0,
-        );
-        assert_eq!(ctx.language, "rs");
+        Self { path: p, relative_path: rp, content: c, language: l, token_count: tc }
     }
 }

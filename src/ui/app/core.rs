@@ -14,16 +14,12 @@ pub struct App {
 }
 
 impl App {
-    /**
-     * Marks the application to terminate the main loop.
-     */
+    /// Marks the application to terminate the main loop.
     pub fn quit(&mut self) {
         self.should_quit = true;
     }
 
-    /**
-     * Marks the current selection as final and prepares for exit.
-     */
+    /// Marks the current selection as final and prepares for exit.
     pub fn confirm(&mut self) {
         self.confirmed = true;
         self.should_quit = true;

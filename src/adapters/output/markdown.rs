@@ -12,18 +12,14 @@ use crate::ports::writer::ContextWriter;
 pub struct MarkdownWriter;
 
 impl MarkdownWriter {
-    /**
-     * Factory for MarkdownWriter.
-     */
+    /// Factory for MarkdownWriter.
     pub fn new() -> Self {
         Self
     }
 }
 
 impl ContextWriter for MarkdownWriter {
-    /**
-     * Generates a structured Markdown document using raw file contents.
-     */
+    /// Generates a structured Markdown document using raw file contents.
     fn write<W: Write>(
         &self,
         files: &[FileContext],
