@@ -24,10 +24,15 @@ fn test_noise_detector_basic_flagging() {
     let scanner = FsScanner::new();
     let results = scanner.scan(&config).unwrap();
 
-    let main_node = results.iter().find(|n| n.relative_path.to_string_lossy() == "main.rs").unwrap();
+    let main_node = results
+        .iter()
+        .find(|n| n.relative_path.to_string_lossy() == "main.rs")
+        .unwrap();
     assert!(!main_node.is_ignored);
 
     // .git should be filtered out entirely by the WalkBuilder if it's noise
-    let git_found = results.iter().any(|n| n.relative_path.to_string_lossy().contains(".git"));
+    let git_found = results
+        .iter()
+        .any(|n| n.relative_path.to_string_lossy().contains(".git"));
     assert!(!git_found);
 }

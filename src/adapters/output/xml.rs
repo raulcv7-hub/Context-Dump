@@ -14,17 +14,15 @@ use crate::ports::writer::ContextWriter;
 pub struct XmlWriter;
 
 impl XmlWriter {
-    /// Factory for XmlWriter.
     pub fn new() -> Self {
         Self
     }
 }
 
 impl ContextWriter for XmlWriter {
-    /// Generates a detailed XML report containing raw file contents.
     fn write<W: Write>(
         &self,
-        files: &[FileContext],
+        files: &[&FileContext],
         config: &ContextConfig,
         writer: W,
     ) -> Result<()> {
@@ -37,7 +35,16 @@ impl ContextWriter for XmlWriter {
         xml.create_element("scan_time")
             .write_text_content(BytesText::new(&Local::now().to_rfc3339()))?;
 
-        let total_tokens: usize = files.iter().map(|f: &FileContext| f.token_count).sum();
+        if let Some(prov) = &config.provenance {
+            xml.write_event(Event::Start(BytesStart::new("provenance")))?;
+            xml.create_element("repository")
+                .write_text_content(BytesText::new(&prov.repo_url))?;
+            xml.create_element("commit_hash")
+                .write_text_content(BytesText::new(&prov.commit_hash))?;
+            xml.write_event(Event::End(BytesEnd::new("provenance")))?;
+        }
+
+        let total_tokens: usize = files.iter().map(|f| f.token_count).sum();
         xml.write_event(Event::Start(BytesStart::new("stats")))?;
         xml.create_element("total_files")
             .write_text_content(BytesText::new(&files.len().to_string()))?;
@@ -51,10 +58,7 @@ impl ContextWriter for XmlWriter {
             .map(|n: &OsStr| n.to_string_lossy().into_owned())
             .unwrap_or_else(|| ".".to_string());
 
-        let tree_paths: Vec<_> = files
-            .iter()
-            .map(|f: &FileContext| &f.relative_path)
-            .collect();
+        let tree_paths: Vec<_> = files.iter().map(|f| &f.relative_path).collect();
         let tree_view = TreeRenderer::build(&tree_paths).render(&root_name);
         xml.create_element("directory_structure")
             .write_text_content(BytesText::new(&tree_view))?;
@@ -65,6 +69,11 @@ impl ContextWriter for XmlWriter {
             let mut elem = BytesStart::new("file");
             elem.push_attribute(("path", file.relative_path.to_string_lossy().as_ref()));
             elem.push_attribute(("language", file.language.as_str()));
+
+            if file.is_suspicious {
+                elem.push_attribute(("suspicious", "true"));
+            }
+
             xml.write_event(Event::Start(elem))?;
 
             match &file.content {
@@ -77,6 +86,11 @@ impl ContextWriter for XmlWriter {
                 }
                 ContentType::Binary => {
                     xml.write_event(Event::CData(BytesCData::new("[BINARY CONTENT SKIPPED]")))?;
+                }
+                ContentType::Omitted => {
+                    xml.write_event(Event::CData(BytesCData::new(
+                        "[OMITTED FOR BREVITY: EXCEEDS TOKEN LIMIT]",
+                    )))?;
                 }
             }
             xml.write_event(Event::End(BytesEnd::new("file")))?;

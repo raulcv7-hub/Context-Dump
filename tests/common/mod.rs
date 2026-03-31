@@ -13,6 +13,6 @@ pub fn create_mock_project() -> Result<TempDir> {
     fs::create_dir(root.join("src"))?;
     File::create(root.join("src/lib.rs"))?.write_all(b"pub fn test() {}")?;
     File::create(root.join("README.md"))?.write_all(b"# Test Project")?;
-    
+
     Ok(dir)
 }

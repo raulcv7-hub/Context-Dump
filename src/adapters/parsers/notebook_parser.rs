@@ -1,8 +1,8 @@
 use crate::adapters::parsers::FileParser;
 use anyhow::{anyhow, Result};
 use serde::Deserialize;
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
 #[derive(Deserialize)]
 struct Notebook {
@@ -41,8 +41,8 @@ impl FileParser for NotebookParser {
     /// Parses the JSON structure of a .ipynb file and aggregates markdown and code cells.
     fn parse(&self, path: &Path) -> Result<String> {
         let content = fs::read_to_string(path)?;
-        let nb: Notebook = serde_json::from_str(&content)
-            .map_err(|e| anyhow!("Invalid Notebook JSON: {}", e))?;
+        let nb: Notebook =
+            serde_json::from_str(&content).map_err(|e| anyhow!("Invalid Notebook JSON: {}", e))?;
 
         let mut output = String::new();
         for (i, cell) in nb.cells.iter().enumerate() {

@@ -1,9 +1,8 @@
 use crate::core::config::models::{ContextConfig, OutputFormat};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 impl ContextConfig {
-    /// Builds a validated configuration by merging user inputs and inferring formats.
     #[allow(clippy::too_many_arguments)]
     pub fn build_validated(
         root_path: std::path::PathBuf,
@@ -13,6 +12,7 @@ impl ContextConfig {
         max_depth: Option<usize>,
         include_hidden: bool,
         no_ignore: bool,
+        max_tokens_per_file: usize,
         to_clipboard: bool,
         verbose: bool,
         smart_ignore: bool,
@@ -33,9 +33,11 @@ impl ContextConfig {
             root_path,
             output_path,
             output_format: final_format,
+            provenance: None,
             max_depth,
             include_hidden,
             no_ignore,
+            max_tokens_per_file,
             to_clipboard,
             verbose,
             smart_ignore,
@@ -49,11 +51,11 @@ impl ContextConfig {
                 .collect::<HashSet<_>>(),
             include_paths: include_path,
             exclude_paths: exclude_path,
+            file_states: HashMap::new(),
         }
     }
 }
 
-/// Maps file extensions to supported output formats.
 fn infer_from_path<P: AsRef<Path>>(path: P) -> Option<OutputFormat> {
     path.as_ref()
         .extension()?

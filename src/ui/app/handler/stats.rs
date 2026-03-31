@@ -10,7 +10,7 @@ impl App {
             let ext = node
                 .path
                 .extension()
-                .and_then(|e| e.to_str())
+                .and_then(|e: &std::ffi::OsStr| e.to_str())
                 .unwrap_or("text")
                 .to_lowercase();
             *counts.entry(ext).or_insert(0) += 1;

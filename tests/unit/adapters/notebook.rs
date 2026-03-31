@@ -9,19 +9,22 @@ use tempfile::tempdir;
 fn test_notebook_extraction_logic() {
     let dir = tempdir().unwrap();
     let path = dir.path().join("test.ipynb");
-    
+
     let json = r##"{
         "cells": [
             {"cell_type": "code", "source": ["print(1)"]},
             {"cell_type": "markdown", "source": "# Hello"}
         ]
     }"##;
-    
-    File::create(&path).unwrap().write_all(json.as_bytes()).unwrap();
-    
+
+    File::create(&path)
+        .unwrap()
+        .write_all(json.as_bytes())
+        .unwrap();
+
     let parser = NotebookParser::new();
     let result = parser.parse(&path).expect("Failed to parse valid notebook");
-    
+
     assert!(result.contains("print(1)"));
     assert!(result.contains("# Hello"));
     assert!(result.contains("markdown"));
@@ -32,8 +35,11 @@ fn test_notebook_extraction_logic() {
 fn test_notebook_invalid_json_error() {
     let dir = tempdir().unwrap();
     let path = dir.path().join("bad.ipynb");
-    File::create(&path).unwrap().write_all(b"not a json object").unwrap();
-    
+    File::create(&path)
+        .unwrap()
+        .write_all(b"not a json object")
+        .unwrap();
+
     let parser = NotebookParser::new();
     let result = parser.parse(&path);
     assert!(result.is_err());

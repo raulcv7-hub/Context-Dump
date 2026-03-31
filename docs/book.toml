@@ -1,0 +1,12 @@
+[book]
+authors = ["Raúl Carrillo Vicente"]
+language = "en"
+src = "src"
+title = "Context-Dump Documentation"
+
+[output.html]
+git-repository-url = "https://github.com/raulcv7-hub/Context-Dump"
+edit-url-template = "https://github.com/raulcv7-hub/Context-Dump/edit/main/docs/src/{path}"
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"

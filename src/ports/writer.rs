@@ -8,7 +8,7 @@ pub trait ContextWriter {
     /// Writes the processed context to the provided writer.
     fn write<W: Write>(
         &self,
-        files: &[FileContext],
+        files: &[&FileContext],
         config: &ContextConfig,
         writer: W,
     ) -> Result<()>;

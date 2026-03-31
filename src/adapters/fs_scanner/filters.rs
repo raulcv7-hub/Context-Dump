@@ -15,12 +15,16 @@ impl PathFilter {
         }
 
         if !config.include_paths.is_empty()
-            && !config.include_paths.iter().any(|inc| path_str.contains(inc))
+            && !config
+                .include_paths
+                .iter()
+                .any(|inc| path_str.contains(inc))
         {
             return false;
         }
 
-        let ext = path.extension()
+        let ext = path
+            .extension()
             .and_then(|e| e.to_str())
             .unwrap_or("")
             .to_lowercase();

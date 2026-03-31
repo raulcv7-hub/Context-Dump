@@ -18,11 +18,14 @@ pub fn run(nodes: Vec<FileNode>, config: ContextConfig) -> anyhow::Result<()> {
     info!("Starting parallel ingestion of {} files...", nodes.len());
     let pb = create_progress_bar(nodes.len());
     let reader = FsReader::new();
-    let contexts: Vec<_> = nodes.into_par_iter().map(|node| {
-        let ctx = reader.read_file(&node, &config);
-        pb.inc(1);
-        ctx
-    }).collect();
+    let contexts: Vec<_> = nodes
+        .into_par_iter()
+        .map(|node| {
+            let ctx = reader.read_file(&node, &config);
+            pb.inc(1);
+            ctx
+        })
+        .collect();
 
     pb.finish_and_clear();
     summary::print(&contexts, &config)

@@ -1,5 +1,5 @@
-use tiktoken_rs::{cl100k_base, CoreBPE};
 use std::sync::OnceLock;
+use tiktoken_rs::{cl100k_base, CoreBPE};
 
 /// Static storage for the BPE encoder to avoid expensive re-initialization.
 static ENCODER: OnceLock<CoreBPE> = OnceLock::new();
@@ -11,9 +11,8 @@ impl TokenCounter {
     /// Counts tokens using the cl100k_base encoding.
     /// Uses OnceLock to ensure the heavy encoder is only loaded once during the process lifetime.
     pub fn count(text: &str) -> usize {
-        let bpe = ENCODER.get_or_init(|| {
-            cl100k_base().expect("Failed to initialize cl100k_base encoder")
-        });
+        let bpe = ENCODER
+            .get_or_init(|| cl100k_base().expect("Failed to initialize cl100k_base encoder"));
         bpe.encode_with_special_tokens(text).len()
     }
 

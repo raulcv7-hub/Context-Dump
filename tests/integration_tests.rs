@@ -3,6 +3,6 @@ pub mod common;
 pub mod integration {
     pub mod cli;
     pub mod cli_filters;
-    pub mod engine_flow;
     pub mod cli_stdout;
+    pub mod engine_flow;
 }

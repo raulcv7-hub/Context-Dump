@@ -23,7 +23,8 @@ fn test_scanner_max_depth_constraint() {
 
     let scanner = FsScanner::new();
     let results = scanner.scan(&config).unwrap();
-    let paths: Vec<String> = results.iter()
+    let paths: Vec<String> = results
+        .iter()
         .map(|n| n.relative_path.to_string_lossy().to_string())
         .collect();
 
@@ -45,7 +46,10 @@ fn test_scanner_hidden_files_toggle() {
     };
 
     let results = FsScanner::new().scan(&config).unwrap();
-    let hidden_file = results.iter().find(|n| n.relative_path.to_string_lossy() == ".env").unwrap();
-    
+    let hidden_file = results
+        .iter()
+        .find(|n| n.relative_path.to_string_lossy() == ".env")
+        .unwrap();
+
     assert!(hidden_file.is_hidden);
 }

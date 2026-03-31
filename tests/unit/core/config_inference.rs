@@ -5,9 +5,21 @@ use std::path::PathBuf;
 #[test]
 fn test_inference_default_fallback() {
     let config = ContextConfig::build_validated(
-        PathBuf::from("."), None, OutputFormat::Xml, false, 
-        None, false, false, false, false, true, 
-        vec![], vec![], vec![], vec![]
+        PathBuf::from("."),
+        None,
+        OutputFormat::Xml,
+        false,
+        None,
+        false,
+        false,
+        30_000,
+        false,
+        false,
+        true,
+        vec![],
+        vec![],
+        vec![],
+        vec![],
     );
     assert_eq!(config.output_format, OutputFormat::Xml);
 }
@@ -16,12 +28,21 @@ fn test_inference_default_fallback() {
 #[test]
 fn test_inference_markdown_detection() {
     let config = ContextConfig::build_validated(
-        PathBuf::from("."), 
-        Some(PathBuf::from("output.md")), 
-        OutputFormat::Xml, // Initial default
-        false, // Not explicit
-        None, false, false, false, false, true, 
-        vec![], vec![], vec![], vec![]
+        PathBuf::from("."),
+        Some(PathBuf::from("output.md")),
+        OutputFormat::Xml,
+        false,
+        None,
+        false,
+        false,
+        30_000,
+        false,
+        false,
+        true,
+        vec![],
+        vec![],
+        vec![],
+        vec![],
     );
     assert_eq!(config.output_format, OutputFormat::Markdown);
 }

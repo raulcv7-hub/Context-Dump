@@ -1,14 +1,14 @@
+use crate::common;
 use assert_cmd::prelude::*;
 use predicates::prelude::*;
 use std::process::Command;
-use crate::common;
 
 /// Verifies that the --stdout flag correctly dumps XML content to the terminal.
 #[test]
 fn test_cli_stdout_xml_format() {
     let dir = common::create_mock_project().unwrap();
     let mut cmd = Command::cargo_bin("context").unwrap();
-    
+
     cmd.current_dir(dir.path())
         .arg(".")
         .arg("--stdout")
@@ -26,7 +26,7 @@ fn test_cli_stdout_xml_format() {
 fn test_cli_stdout_markdown_format() {
     let dir = common::create_mock_project().unwrap();
     let mut cmd = Command::cargo_bin("context").unwrap();
-    
+
     cmd.current_dir(dir.path())
         .arg(".")
         .arg("--stdout")

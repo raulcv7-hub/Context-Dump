@@ -12,17 +12,15 @@ use crate::ports::writer::ContextWriter;
 pub struct MarkdownWriter;
 
 impl MarkdownWriter {
-    /// Factory for MarkdownWriter.
     pub fn new() -> Self {
         Self
     }
 }
 
 impl ContextWriter for MarkdownWriter {
-    /// Generates a structured Markdown document using raw file contents.
     fn write<W: Write>(
         &self,
-        files: &[FileContext],
+        files: &[&FileContext],
         config: &ContextConfig,
         mut writer: W,
     ) -> Result<()> {
@@ -33,7 +31,13 @@ impl ContextWriter for MarkdownWriter {
             Local::now().format("%Y-%m-%d %H:%M:%S")
         )?;
 
-        let total_tokens: usize = files.iter().map(|f: &FileContext| f.token_count).sum();
+        if let Some(prov) = &config.provenance {
+            writeln!(writer, "## Provenance")?;
+            writeln!(writer, "- **Source:** `{}`", prov.repo_url)?;
+            writeln!(writer, "- **Commit:** `{}`\n", prov.commit_hash)?;
+        }
+
+        let total_tokens: usize = files.iter().map(|f| f.token_count).sum();
         let root_name = config
             .root_path
             .file_name()
@@ -48,15 +52,17 @@ impl ContextWriter for MarkdownWriter {
             total_tokens
         )?;
 
-        let tree_paths: Vec<_> = files
-            .iter()
-            .map(|f: &FileContext| &f.relative_path)
-            .collect();
+        let tree_paths: Vec<_> = files.iter().map(|f| &f.relative_path).collect();
         let tree_view = TreeRenderer::build(&tree_paths).render(&root_name);
         writeln!(writer, "## Structure\n```text\n{}```\n", tree_view)?;
 
         for file in files {
             writeln!(writer, "### `{}`", file.relative_path.display())?;
+
+            if file.is_suspicious {
+                writeln!(writer, "> [!WARNING]\n> Suspicious code detected (potential minification/obfuscation).\n")?;
+            }
+
             match &file.content {
                 ContentType::Text(text) => {
                     writeln!(writer, "```{}\n{}```\n", file.language, text)?;
@@ -69,9 +75,12 @@ impl ContextWriter for MarkdownWriter {
                     )?;
                 }
                 ContentType::Binary => {
+                    writeln!(writer, "\n> [!NOTE]\n> **Binary Content:** Omitted\n")?;
+                }
+                ContentType::Omitted => {
                     writeln!(
                         writer,
-                        "\n> [!NOTE]\n> **Binary Content:** Omitted\n"
+                        "\n> [!WARNING]\n> **[OMITTED FOR BREVITY: EXCEEDS TOKEN LIMIT]**\n"
                     )?;
                 }
             }

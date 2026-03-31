@@ -1,7 +1,7 @@
+use crate::common;
 use context::adapters::fs_scanner::FsScanner;
 use context::core::config::ContextConfig;
 use context::ports::scanner::ProjectScanner;
-use crate::common;
 
 #[test]
 fn test_scanner_finds_standard_files() {

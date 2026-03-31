@@ -22,9 +22,15 @@ fn test_filter_path_inclusion_logic() {
     };
 
     let results = FsScanner::new().scan(&config).unwrap();
-    
-    let service = results.iter().find(|n| n.relative_path.to_string_lossy().contains("service.rs")).unwrap();
-    let main = results.iter().find(|n| n.relative_path.to_string_lossy() == "main.rs").unwrap();
+
+    let service = results
+        .iter()
+        .find(|n| n.relative_path.to_string_lossy().contains("service.rs"))
+        .unwrap();
+    let main = results
+        .iter()
+        .find(|n| n.relative_path.to_string_lossy() == "main.rs")
+        .unwrap();
 
     assert!(!service.is_ignored);
     assert!(main.is_ignored);
