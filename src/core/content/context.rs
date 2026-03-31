@@ -1,19 +1,15 @@
 use serde::Serialize;
 use std::path::PathBuf;
 
-/// Categorization of file content after extraction.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "type", content = "data")]
 pub enum ContentType {
-    /// Extracted UTF-8 string.
     Text(String),
-    /// Marker for skipped binary data.
     Binary,
-    /// Metadata regarding an extraction failure.
+    Omitted,
     Error(String),
 }
 
-/// Integrated representation of a file's data and system metadata.
 #[derive(Debug, Clone, Serialize)]
 pub struct FileContext {
     pub path: PathBuf,
@@ -21,17 +17,25 @@ pub struct FileContext {
     pub content: ContentType,
     pub language: String,
     pub token_count: usize,
+    pub is_suspicious: bool,
 }
 
 impl FileContext {
-    /// Constructor for a new FileContext.
     pub fn new(
         p: PathBuf,
         rp: PathBuf,
         c: ContentType,
         l: String,
         tc: usize,
+        suspicious: bool,
     ) -> Self {
-        Self { path: p, relative_path: rp, content: c, language: l, token_count: tc }
+        Self {
+            path: p,
+            relative_path: rp,
+            content: c,
+            language: l,
+            token_count: tc,
+            is_suspicious: suspicious,
+        }
     }
 }

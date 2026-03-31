@@ -1,31 +1,24 @@
 use std::path::PathBuf;
 
-/// UI-specific representation of a node in the interactive tree.
+/// Visual representation of a filesystem node within the interactive UI.
 pub struct UiNode {
-    /// The filesystem path associated with this node.
     pub path: PathBuf,
-    /// The display name in the TUI explorer.
     pub name: String,
-    /// Whether this node represents a directory.
     pub is_dir: bool,
-    /// Whether the directory is currently expanded in the view.
     pub expanded: bool,
-    /// Whether the node is selected for the final dump.
     pub selected: bool,
-    /// Inherited hidden status from the domain model.
     pub is_hidden: bool,
-    /// Inherited ignored status from the domain model.
     pub is_ignored: bool,
-    /// Visual depth level for correct indentation rendering.
+    pub is_sensitive: bool,
+    pub is_git_ignored: bool,
     pub depth: usize,
-    /// Estimated tokens to be shown in the UI.
     pub token_estimate: usize,
-    /// Indices of child nodes within the App's node vector.
     pub children: Vec<usize>,
 }
 
 impl UiNode {
-    /// Constructs a new UiNode with default expansion and smart selection logic.
+    /// Constructs a fully populated UiNode with specific expansion behavior.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         path: PathBuf,
         name: String,
@@ -33,16 +26,22 @@ impl UiNode {
         depth: usize,
         hidden: bool,
         ignored: bool,
+        sensitive: bool,
+        git_ignored: bool,
         token_estimate: usize,
+        selected: bool,
+        expanded: bool,
     ) -> Self {
         Self {
             path,
             name,
             is_dir,
-            expanded: true,
-            selected: !hidden && !ignored,
+            expanded,
+            selected,
             is_hidden: hidden,
             is_ignored: ignored,
+            is_sensitive: sensitive,
+            is_git_ignored: git_ignored,
             token_estimate,
             depth,
             children: Vec::new(),

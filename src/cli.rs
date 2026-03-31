@@ -6,7 +6,7 @@ use std::path::PathBuf;
 #[command(author, version, about, long_about = None)]
 pub struct ContextCli {
     #[arg(default_value = ".")]
-    pub path: PathBuf,
+    pub path: String,
 
     #[arg(short, long)]
     pub output: Option<PathBuf>,
@@ -34,6 +34,9 @@ pub struct ContextCli {
 
     #[arg(long, default_value_t = false)]
     pub no_ignore: bool,
+
+    #[arg(long, default_value_t = 50000)]
+    pub max_tokens: usize,
 
     #[arg(short = 'e', long, value_delimiter = ',')]
     pub extensions: Vec<String>,

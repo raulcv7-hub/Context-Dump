@@ -19,7 +19,10 @@ impl App {
     fn set_output_to_file(&mut self) {
         let format = self.config.output_format;
         let ext = self.format_to_ext(format);
-        let base_name = self.config.root_path.file_name()
+        let base_name = self
+            .config
+            .root_path
+            .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "context_report".to_string());
 

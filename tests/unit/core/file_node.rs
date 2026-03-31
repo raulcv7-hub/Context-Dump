@@ -6,18 +6,24 @@ use std::path::PathBuf;
 fn test_file_node_integrity() {
     let path = PathBuf::from("/tmp/test.rs");
     let rel = PathBuf::from("test.rs");
-    
+
     let node = FileNode::new(
         path.clone(),
         rel.clone(),
+        false, // is_dir
         true,  // is_hidden
         false, // is_ignored
-        150    // token_estimate
+        false, // is_sensitive
+        false, // is_git_ignored
+        150,   // token_estimate
     );
 
     assert_eq!(node.path, path);
     assert_eq!(node.relative_path, rel);
+    assert!(!node.is_dir);
     assert!(node.is_hidden);
     assert!(!node.is_ignored);
+    assert!(!node.is_sensitive);
+    assert!(!node.is_git_ignored);
     assert_eq!(node.token_estimate, 150);
 }

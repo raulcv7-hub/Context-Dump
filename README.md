@@ -2,92 +2,81 @@
 
 [![Rust](https://img.shields.io/badge/built_with-Rust-dca282.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-mdBook-blue.svg)](https://raulcv7-hub.github.io/Context-Dump/)
 
-Context-Dump is a high-performance command-line utility and terminal user interface (TUI) designed for the systematic aggregation of project source code and technical documentation into a unified context format. The engine is optimized for ingestion by Large Language Models (LLMs), ensuring high data fidelity and precise token management.
+**Context-Dump** is a high-performance, security-hardened native engine designed to aggregate massive project source code and technical documentation into unified, token-optimized context reports for Large Language Models (LLMs). 
 
-## Technical Overview
+It transforms disparate file systems into clean, structured XML or Markdown payloads while strictly enforcing data privacy and context window economics.
 
-The application is engineered in Rust to provide a memory-safe, zero-dependency executable. It addresses the challenge of project context window limitations by allowing users to selectively aggregate disparate file formats into structured XML or Markdown reports.
+## Security & Privacy
 
-### Key Capabilities
+Context-Dump is built for environments where data leakage is not an option. It features a multi-layered security pipeline:
 
-- **High-Concurrency Ingestion**: Utilizes the Rayon data-parallelism library to execute multi-threaded file scanning and content extraction.
-- **Native Format Support**: Implements built-in, pure-Rust parsers for PDF, Microsoft Office (XLSX, DOCX), Jupyter Notebooks (IPYNB), and standard UTF-8 text files.
-- **Precision Tokenization**: Employs the `cl100k_base` BPE encoding (standardized by GPT-4 and Claude models) via `tiktoken-rs` for exact context window budgeting.
-- **Dependency-Free Portability**: Compiles to a static binary with no external runtime requirements (e.g., Python, C-shared libraries, or virtual environments).
-- **State Persistence**: Automatically retains user configuration, including inclusion/exclusion filters and output preferences, between execution cycles.
+- **PII & Secret Redaction**: Native Regex-based masking of Emails, IPv4 addresses, AWS Access Keys (`AKIA...`), JWTs, and Stripe Live Tokens.
+- **Luhn Algorithm Validation**: Smart credit card detection that validates 13-19 digit sequences mathematically before redaction to prevent false positives.
+- **Suspicious Code Detection**: Heuristically identifies minified, obfuscated, or machine-generated assets (e.g., massive single-line JS bundles) to save your token budget and alert the LLM.
+- **Zero-Trace Remote Ingestion**: Pass a Git URL directly. The engine performs a shallow clone into a temporary directory and utilizes strict **RAII patterns** to ensure the repository is wiped from the disk even if the process is interrupted.
+- **Hard-Coded Security Firewall**: Absolute denial-of-service for sensitive credentials like `.env` files, `id_rsa` keys, `kubeconfig`, and certificates.
+
+## Advanced Capabilities
+
+- **X-Ray Archive Parsing**: Natively "sees" inside `.zip` and `.tar.gz` files. It extracts internal text content without requiring manual decompression.
+- **Token Heatmaps**: The TUI dynamically colors files (Green/Yellow/Red) based on their `cl100k_base` BPE token weight.
+- **Intelligent Truncation**: Prevents LLM context overflows by truncating files that exceed a specific token limit (default: 30k), injecting a `[OMITTED FOR BREVITY]` marker.
+- **Priority Dumping**: Intelligently sorts the output so that `README.md`, architectural docs, and project configurations (`Cargo.toml`, `package.json`) appear at the top of the report.
+- **Cross-Process Clipboard (Linux)**: Bypasses standard clipboard timeouts on X11/Wayland by spawning background daemons (`wl-copy`, `xclip`) to ensure massive payloads persist after the CLI exits.
 
 ## Installation
 
 ### Prerequisites
+- **Rust Toolchain** (1.80 or higher)
+- **Git** (Required only for remote repository features)
 
-- Rust Toolchain (1.80 or higher)
-- C Compiler (for internal linking on specific targets)
-
-### Building from Source
-
-To compile and install the optimized release binary to your local path:
-
+### Build and Install
 ```bash
 make install
 ```
-
-This command invokes the Rust compiler with maximum optimization flags and relocates the binary to the standard user path (`~/.local/bin` or equivalent).
+This command compiles an optimized release binary and moves it to your local bin directory (typically `~/.local/bin` or `~/.cargo/bin`).
 
 ## Operation Modes
 
 ### Interactive Mode (TUI)
-
-Executing the utility without arguments initializes the interactive Terminal User Interface:
-
+Initializing the utility without arguments or target flags launches the interactive explorer:
 ```bash
 context
 ```
 
 **Keybindings and Navigation:**
-
 | Command | Action |
 |:---|:---|
-| Arrows | Traverse the hierarchical file tree. |
-| Space | Toggle recursive selection/deselection of nodes. |
-| o | Cycle output target (Standard Output, File System, System Clipboard). |
-| f | Cycle serialization format (XML, Markdown). |
-| Enter | Commit selection and initialize processing. |
-| Esc / q | Terminate the application. |
+| `Arrows` / `Mouse Wheel` | Traverse the hierarchical file tree. |
+| `Left Click` / `Space` | Toggle selection of a file or recursively for a directory. |
+| `a` / `d` | **Select All** or **Deselect All** valid files in the project. |
+| `t` | **Toggle Tests**: Smart-select/deselect all test files and `/tests` directories. |
+| `E` / `C` | **Expand All** or **Collapse All** folders in the tree. |
+| `e` / `c` | **Expand** or **Collapse** only the currently highlighted node. |
+| `o` / `f` | Cycle Output target (Clipboard, File, Stdout) or Format (XML, Markdown). |
+| `Enter` | Commit selection and initialize processing. |
 
-### Headless Mode (CLI)
-
-The utility supports non-interactive execution for integration into automated pipelines and shell redirection:
+### Headless & Remote Mode (CLI)
+For automation, CI/CD pipelines, or quick remote extractions:
 
 ```bash
-context <PATH> [OPTIONS]
+# Clone a remote repo, extract context, and copy to clipboard in one step:
+context https://github.com/rust-lang/regex --clip
+
+# Scan local directory with strict extension filters and output to stdout:
+context ./src --stdout --format markdown -e rs,toml --max-tokens 50000
 ```
 
-**Common Flags:**
+## Persistence & Governance
 
-- `-o, --output <FILE>`: Specifies the target path for the report.
-- `-s, --stdout`: Redirects the report content to the standard output stream (Feedback is redirected to stderr).
-- `-f, --format <FORMAT>`: Manually selects the serialization format (`xml` or `markdown`).
-- `-e, --extensions <LIST>`: Implements a whitelist filter for specific file extensions.
-- `-X, --exclude-path <LIST>`: Implements a blacklist filter for path substrings.
+- **Project-Specific Memory**: The tool generates a unique hash for every project root, remembering your exact file selections and configuration preferences across sessions.
+- **Provenance Tracking**: Every report includes metadata indicating the source repository URL and the specific SHA1 commit hash for auditing purposes.
+- **.gitignore Awareness**: Respects your existing ignore rules by deselecting matched files by default while keeping them visible for manual override.
 
-## System Architecture
-
-The project adheres to a Modular Native Architecture, separating domain logic from infrastructure adapters:
-
-- **Core Layer**: Manages BPE tokenization, domain models (`FileNode`, `FileContext`), and the ASCII tree rendering engine.
-- **Adapter Layer**: Contains specialized native extractors for binary and structured formats.
-- **Engine Layer**: Orchestrates the execution lifecycle, CLI argument parsing, and progress reporting via `stderr`.
-- **UI Layer**: Implements a state-driven reactive TUI using the `ratatui` framework.
-
-## Data Serialization Formats
-
-### XML (Structured)
-Optimized for programmatic LLM ingestion. It provides clear demarcations between file metadata, directory structure, and content within CDATA blocks to prevent escape character corruption.
-
-### Markdown (Readable)
-Optimized for human auditing and LLM prompting. It utilizes standard Markdown syntax and fenced code blocks with language identifiers.
+## Technical Documentation
+For deep-dives into the internal architecture, security heuristics, and deployment strategies, visit the [Context-Dump Documentation Site](https://RaulCarrillo.github.io/context).
 
 ## License
-
-This software is released under the MIT License. For further information, refer to the [LICENSE](./LICENSE) file included in this repository.
+Released under the MIT License. Copyright (c) 2026 Raúl Carrillo Vicente.

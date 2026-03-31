@@ -16,7 +16,7 @@ endif
 
 TEST_DIR := tests
 
-.PHONY: all setup build release run clean install help test test-unit test-integration
+.PHONY: all setup build release run clean install help test test-unit test-integration check
 
 all: help
 
@@ -39,6 +39,10 @@ test:
 	@echo "Executing all tests..."
 	@$(CARGO) test
 
+check:
+	@echo "Running Rust Clippy Linter..."
+	@$(CARGO) clippy --all-targets --all-features -- -D warnings
+
 clean:
 	@$(CARGO) clean
 	@echo "Artifacts removed."
@@ -56,6 +60,7 @@ help:
 	@echo "  release          Optimized release compilation"
 	@echo "  run              Execute current build"
 	@echo "  test             Run all tests"
+	@echo "  check            Run static analysis linter"
 	@echo "  clean            Remove build data"
 	@echo "  install          Standard Rust installation (Portable)"
 	@echo "  help             Show this information"

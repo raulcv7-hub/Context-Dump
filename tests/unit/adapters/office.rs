@@ -11,8 +11,9 @@ fn test_native_docx_paragraph_spacing() {
     let docx_path = dir.path().join("para.docx");
     let file = File::create(&docx_path).unwrap();
     let mut zip = zip::ZipWriter::new(file);
-    
-    zip.start_file("word/document.xml", SimpleFileOptions::default()).unwrap();
+
+    zip.start_file("word/document.xml", SimpleFileOptions::default())
+        .unwrap();
     let xml = r#"
         <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
             <w:body>
@@ -26,7 +27,7 @@ fn test_native_docx_paragraph_spacing() {
 
     let parser = NativeOfficeParser::new();
     let result = parser.parse(&docx_path).unwrap();
-    
+
     assert!(result.contains("Hello\nWorld"));
 }
 
@@ -37,8 +38,9 @@ fn test_native_docx_inline_runs() {
     let docx_path = dir.path().join("runs.docx");
     let file = File::create(&docx_path).unwrap();
     let mut zip = zip::ZipWriter::new(file);
-    
-    zip.start_file("word/document.xml", SimpleFileOptions::default()).unwrap();
+
+    zip.start_file("word/document.xml", SimpleFileOptions::default())
+        .unwrap();
     let xml = r#"
         <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
             <w:body>
@@ -54,6 +56,6 @@ fn test_native_docx_inline_runs() {
 
     let parser = NativeOfficeParser::new();
     let result = parser.parse(&docx_path).unwrap();
-    
+
     assert!(result.contains("Hello"));
 }

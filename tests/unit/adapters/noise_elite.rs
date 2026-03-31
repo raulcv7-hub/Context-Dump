@@ -14,10 +14,10 @@ fn test_noise_elite_suppression() {
     let aws_dir = root.join(".aws");
     fs::create_dir(&aws_dir).unwrap();
     File::create(aws_dir.join("credentials")).unwrap();
-    
+
     let terraform_dir = root.join(".terraform");
     fs::create_dir(&terraform_dir).unwrap();
-    
+
     File::create(root.join("valid.go")).unwrap();
 
     let config = ContextConfig {

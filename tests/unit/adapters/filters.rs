@@ -23,10 +23,16 @@ fn test_extension_filtering() {
     };
 
     let results = FsScanner::new().scan(&config).unwrap();
-    
-    let rs_file = results.iter().find(|n| n.relative_path.to_string_lossy() == "logic.rs").unwrap();
-    let css_file = results.iter().find(|n| n.relative_path.to_string_lossy() == "styles.css").unwrap();
-    
+
+    let rs_file = results
+        .iter()
+        .find(|n| n.relative_path.to_string_lossy() == "logic.rs")
+        .unwrap();
+    let css_file = results
+        .iter()
+        .find(|n| n.relative_path.to_string_lossy() == "styles.css")
+        .unwrap();
+
     assert!(!rs_file.is_ignored);
     assert!(css_file.is_ignored);
 }
@@ -46,7 +52,10 @@ fn test_path_exclusion() {
     };
 
     let results = FsScanner::new().scan(&config).unwrap();
-    let secret_file = results.iter().find(|n| n.relative_path.to_string_lossy().contains("secret")).unwrap();
-    
+    let secret_file = results
+        .iter()
+        .find(|n| n.relative_path.to_string_lossy().contains("secret"))
+        .unwrap();
+
     assert!(secret_file.is_ignored);
 }

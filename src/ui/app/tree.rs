@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 impl App {
-    /// Constructs the application state by injecting file weights into the visual tree.
+    /// Builds the internal hierarchical state from the linear vector of parsed FileNodes.
     pub fn new(files: &[FileNode], _root_path: &Path, config: ContextConfig) -> Self {
         let mut nodes = Vec::new();
         let mut path_to_index: HashMap<PathBuf, usize> = HashMap::new();
@@ -22,11 +22,29 @@ impl App {
                 current_path.push(component);
 
                 if !path_to_index.contains_key(&current_path) {
-                    let is_dir = current_path != *relative;
-                    let depth = current_path.components().count() - 1;
+                    let is_dir = current_path != *relative || file.is_dir;
+                    let depth = current_path.components().count().saturating_sub(1);
                     let name = component.as_os_str().to_string_lossy().to_string();
 
                     let tokens = if is_dir { 0 } else { file.token_estimate };
+
+                    let is_expanded = if is_dir && current_path == *relative {
+                        !file.is_ignored
+                    } else {
+                        true
+                    };
+
+                    let previously_selected = config.file_states.get(&current_path);
+                    let is_selected = match previously_selected {
+                        Some(&was_selected) => was_selected,
+                        None => {
+                            !file.is_hidden
+                                && !file.is_ignored
+                                && !file.is_sensitive
+                                && !file.is_git_ignored
+                                && !is_dir
+                        }
+                    };
 
                     let node = UiNode::new(
                         current_path.clone(),
@@ -35,7 +53,11 @@ impl App {
                         depth,
                         file.is_hidden,
                         file.is_ignored,
+                        file.is_sensitive,
+                        file.is_git_ignored,
                         tokens,
+                        is_selected,
+                        is_expanded,
                     );
 
                     let idx = nodes.len();
@@ -61,7 +83,7 @@ impl App {
             should_quit: false,
             confirmed: false,
             config,
-            default_filename: "context_report".to_string()
+            default_filename: "context_report".to_string(),
         };
 
         app.update_view();
